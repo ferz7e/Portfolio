@@ -1,9 +1,12 @@
+/* ============================= */
+/* Fuentes personalizadas         */
+/* ============================= */
 @font-face {
   font-family: "Lamoric-Rowen";
   src: url("/fonts/LamoricRowenTTF.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: swap; /* Swap: muestra texto con fallback mientras carga la fuente */
 }
 @font-face {
   font-family: "Poppins";
@@ -19,20 +22,24 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* ============================= */
+/* Variables CSS (colores, espacios, fuentes) */
+/* ============================= */
 :root {
-  /* Base */
+  /* Colores base */
   --color-bg: #0b0b0c;
   --color-text-primary: #ededed;
   --color-text-secondary: rgba(237, 237, 237, 0.6);
 
-  /* Padding */
+  /* Espaciados (padding/margin) */
   --space-1: 8px;
   --space-2: 16px;
   --space-3: 32px;
   --space-4: 64px;
   --space-5: 98px;
 
-  /* Font sizes */
+  /* Tamaños de fuente */
   --font-xs: 8px;
   --font-sm: 12px;
   --font-md: 16px;
@@ -43,12 +50,18 @@
   --font-4xl: 96px;
 }
 
+/* ============================= */
+/* Reset básico y box-sizing     */
+/* ============================= */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* ============================= */
+/* Estilos base de html y body   */
+/* ============================= */
 html,
 body {
   height: 100%;
@@ -58,28 +71,43 @@ body {
   font-weight: 300;
   font-size: var(--font-sm);
 }
+
+/* ============================= */
+/* Contenedor raíz (#root)       */
+/* ============================= */
 #root {
   padding: var(--space-2);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100vh; /* Ocupa toda la altura de la ventana */
 }
-/* Tablet: desde 769px hasta 1024px */
+
+/* ============================= */
+/* Responsivo - Tablet           */
+/* ============================= */
 @media (min-width: 769px) and (max-width: 1024px) {
   #root {
     padding-inline: var(--space-1);
   }
 }
-/* Mobile: hasta 768px */
+
+/* ============================= */
+/* Responsivo - Mobile           */
+/* ============================= */
 @media (max-width: 768px) {
   #root {
     padding-inline: 0px;
   }
 }
+
+/* ============================= */
+/* Clases de resaltado de texto  */
+/* ============================= */
 .highlight {
-  color: var(--color-text-primary);
+  color: var(--color-text-primary); /* Color principal para resaltar palabras */
 }
+
 .highlight__initial {
-  font-size: var(--font-md);
+  font-size: var(--font-md); /* Tamaño más pequeño para iniciales resaltadas */
 }

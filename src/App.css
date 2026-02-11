@@ -1,38 +1,44 @@
+/* ============================= */
+/* Layout principal              */
+/* ============================= */
 .layout {
   width: 100%;
   height: 100%;
-
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* ============ footer ============*/
-
+/* ============================= */
+/* Footer                        */
+/* ============================= */
 .footer {
   display: flex;
-  justify-content: center; /* centra vertical/horizontal */
-  align-items: flex-end;
-  height: 100vh;
+  justify-content: center; /* centra contenido horizontalmente */
+  align-items: flex-end; /* alinea contenido al fondo */
+  height: 100vh; /* ocupa toda la altura de la ventana */
 }
 
 .footer__wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 40px; /* la caja se ajusta al tamaño del contenido */
+  width: 40px; /* ancho ajustado al contenido */
   position: relative;
 }
 
 .footer__p {
-  transform: rotate(-90deg);
-  transform-origin: center center; /* girar desde el centro */
-  white-space: nowrap; /* evita que el texto se rompa */
+  transform: rotate(-90deg); /* rotar texto verticalmente */
+  transform-origin: center center; /* rotación desde el centro */
+  white-space: nowrap; /* evita salto de línea */
   position: absolute;
-  bottom: 64px;
+  bottom: 64px; /* posición desde la base del wrapper */
   color: var(--color-accent);
 }
-/* ============ main ============*/
+
+/* ============================= */
+/* Main - contenedor central       */
+/* ============================= */
 .main {
   position: sticky;
   padding: var(--space-3);
@@ -42,6 +48,10 @@
   border: 1px solid var(--color-text-secondary);
   border-radius: 8px;
 }
+
+/* ----------------------------- */
+/* Contenedor izquierdo (Hero + About) */
+/* ----------------------------- */
 .main__container--left {
   position: absolute;
   top: 0;
@@ -53,24 +63,29 @@
   height: calc(100% - 64px);
   width: fit-content;
 }
+
 .hero {
   display: flex;
   flex-direction: column;
 }
+
 .name {
   font-weight: 100;
   font-size: var(--font-2xl);
   line-height: 56px;
 }
+
 .name__initial {
   font-size: var(--font-3xl);
 }
+
 .subtitle {
   margin-left: 4px;
   font-size: var(--font-lg);
   color: var(--color-accent);
   font-weight: 100;
 }
+
 .about {
   display: flex;
   flex-direction: column;
@@ -78,6 +93,10 @@
   max-width: 180px;
   color: var(--color-text-secondary);
 }
+
+/* ----------------------------- */
+/* Contenedor derecho (Proyectos) */
+/* ----------------------------- */
 .main__container--right {
   padding-block: var(--space-4);
   display: flex;
@@ -95,8 +114,9 @@
 }
 .main__container--right::-webkit-scrollbar {
   width: 0px; /* Chrome, Safari, Opera */
-  background: transparent; /* opcional: fondo transparente */
+  background: transparent; /* fondo transparente */
 }
+
 .proyect {
   max-width: 600px;
   display: flex;
@@ -106,28 +126,35 @@
   opacity: 60%;
   cursor: pointer;
 }
+
 .proyect:hover {
   opacity: 100%;
 }
+
 .proyect__container {
   display: flex;
   gap: var(--space-1);
 }
+
 .proyect__id {
   font-size: var(--font-xl);
   font-weight: 100;
 }
+
 .proyect__title {
   font-size: var(--font-4xl);
   font-weight: 100;
   line-height: 72px;
 }
+
 .proyect__subtitle {
   font-size: var(--font-md);
   text-align: end;
 }
-/* ============ header ============*/
 
+/* ============================= */
+/* Header / Navegación vertical  */
+/* ============================= */
 .header {
   display: flex;
   justify-content: center;
@@ -141,21 +168,24 @@
   gap: var(--space-4);
   justify-content: center;
   align-items: center;
-  width: 40px; /* la caja se ajusta al tamaño del contenido */
+  width: 40px; /* ancho ajustado al contenido */
 }
 
 .header__navbar--item {
-  transform: rotate(90deg);
-  transform-origin: center center; /* girar desde el centro */
-  white-space: nowrap; /* evita que el texto se rompa */
+  transform: rotate(90deg); /* rotar texto horizontal a vertical */
+  transform-origin: center center;
+  white-space: nowrap; /* evita salto de línea */
   color: var(--color-text-secondary);
   text-decoration: none;
 }
+
 .header__navbar--item:hover {
   color: var(--color-text-primary);
 }
 
-/* Tablet: desde 769px hasta 1024px */
+/* ============================= */
+/* Responsivo: Tablet (769px - 1024px) */
+/* ============================= */
 @media (min-width: 769px) and (max-width: 1024px) {
   .main {
     padding: var(--space-2);
@@ -199,7 +229,10 @@
     font-size: var(--font-sm);
   }
 }
-/* Mobile: hasta 768px */
+
+/* ============================= */
+/* Responsivo: Mobile (hasta 768px) */
+/* ============================= */
 @media (max-width: 768px) {
   .main {
     padding: var(--space-1);
@@ -210,7 +243,7 @@
   }
   .footer__wrapper,
   .header__navbar {
-    width: 20px;
+    width: 20px; /* se reduce el ancho de cajas laterales */
   }
   .name {
     font-size: var(--font-lg);

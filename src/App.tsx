@@ -1,21 +1,35 @@
 import "./App.css";
 
+// Componente principal de la aplicación
 function App() {
   return (
     <div className="layout">
+      {/* ============================= */}
+      {/* Footer - información de autor */}
+      {/* ============================= */}
       <footer className="footer">
         <div className="footer__wrapper">
           <p className="footer__p">&copy; Fernando Zárate</p>
         </div>
       </footer>
+
+      {/* ============================= */}
+      {/* Main - Contenedor principal del contenido */}
+      {/* ============================= */}
       <main className="main">
+        {/* ----------------------------- */}
+        {/* Sección izquierda - Hero + About */}
+        {/* ----------------------------- */}
         <div className="main__container--left">
+          {/* Hero - Nombre y subtítulo */}
           <div className="hero">
             <h1 className="name">
               <span className="name__initial">F</span>ernando <span className="name__initial">Z</span>árate
             </h1>
             <h2 className="subtitle">Developer & Designer</h2>
           </div>
+
+          {/* About - Descripción personal y profesional */}
           <div className="about">
             <p className="about__p">
               <span className="highlight__initial">O</span>riginario de San Juan, Argentina, soy diseñador,
@@ -29,6 +43,10 @@ function App() {
             </p>
           </div>
         </div>
+
+        {/* ----------------------------- */}
+        {/* Sección derecha - Proyectos */}
+        {/* ----------------------------- */}
         <div className="main__container--right">
           <div className="proyect">
             <div className="proyect__container">
@@ -39,6 +57,10 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* ============================= */}
+      {/* Header - Barra de navegación */}
+      {/* ============================= */}
       <header className="header">
         <div className="header__navbar">
           <a href="https://ejemplo.com" className="header__navbar--item" target="_blank" rel="noopener noreferrer">
@@ -62,4 +84,5 @@ function App() {
     </div>
   );
 }
+
 export default App;
