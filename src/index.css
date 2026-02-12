@@ -1,6 +1,7 @@
 /* ============================= */
 /* Fuentes personalizadas         */
 /* ============================= */
+
 @font-face {
   font-family: "Lamoric-Rowen";
   src: url("/fonts/LamoricRowenTTF.woff2") format("woff2");
@@ -26,6 +27,7 @@
 /* ============================= */
 /* Variables CSS (colores, espacios, fuentes) */
 /* ============================= */
+
 :root {
   /* Colores base */
   --color-bg: #0b0b0c;
@@ -54,6 +56,7 @@
 /* ============================= */
 /* Reset básico y box-sizing     */
 /* ============================= */
+
 * {
   margin: 0;
   padding: 0;
@@ -63,6 +66,7 @@
 /* ============================= */
 /* Estilos base de html y body   */
 /* ============================= */
+
 html,
 body {
   height: 100%;
@@ -76,6 +80,7 @@ body {
 /* ============================= */
 /* Contenedor raíz (#root)       */
 /* ============================= */
+
 #root {
   height: 100vh; /* Ocupa toda la altura de la ventana */
   padding: var(--space-3);
@@ -87,6 +92,7 @@ body {
 /* ============================= */
 /* Responsivo - Tablet           */
 /* ============================= */
+
 @media (min-width: 769px) and (max-width: 1024px) {
   #root {
     padding-inline: var(--space-1);
@@ -96,19 +102,9 @@ body {
 /* ============================= */
 /* Responsivo - Mobile           */
 /* ============================= */
+
 @media (max-width: 768px) {
   #root {
     padding-inline: 0px;
   }
-}
-
-/* ============================= */
-/* Clases de resaltado de texto  */
-/* ============================= */
-.highlight {
-  color: var(--color-accent); /* Color principal para resaltar palabras */
-}
-
-.highlight__initial {
-  font-size: var(--font-md); /* Tamaño más pequeño para iniciales resaltadas */
 }

@@ -1,11 +1,13 @@
 import "./App.css";
 import MainBackground from "./components/MainBackground";
+import Loader from "./components/Loader";
 import { GoArrowUpRight } from "react-icons/go";
 
 // Componente principal de la aplicación
 function App() {
   return (
     <div className="layout">
+      <Loader />
       {/* ============================= */}
       {/* Footer - información de autor */}
       {/* ============================= */}
@@ -65,7 +67,7 @@ function App() {
               <div className="proyect__containerLink">
                 <a
                   className="proyect__link"
-                  href="https://github.com/FernandoAvZarate"
+                  href="https://github.com/ferz7e/unexo-showcase"
                   target="_blank"
                   rel="noopener noreferrer">
                   Github
@@ -83,21 +85,21 @@ function App() {
       <header className="header">
         <div className="header__navbar">
           <a
-            href="https://www.instagram.com/fernando.zarate.molina/"
+            href="https://www.instagram.com/ferz7e"
             className="header__navbar--item"
             target="_blank"
             rel="noopener noreferrer">
             Instagram
           </a>
           <a
-            href="https://www.linkedin.com/in/fernandozaratedev/"
+            href="https://www.linkedin.com/in/ferz7e"
             className="header__navbar--item"
             target="_blank"
             rel="noopener noreferrer">
             Linkedin
           </a>
           <a
-            href="https://github.com/FernandoAvZarate"
+            href="https://github.com/ferz7e"
             className="header__navbar--item"
             target="_blank"
             rel="noopener noreferrer">

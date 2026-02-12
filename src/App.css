@@ -67,17 +67,20 @@
   flex-direction: column;
 }
 
-.name {
+.name,
+.loader__container--name {
   font-weight: 100;
   font-size: var(--font-2xl);
   line-height: 56px;
 }
 
-.name__initial {
+.name__initial,
+.loader__name--initial {
   font-size: var(--font-3xl);
 }
 
-.subtitle {
+.subtitle,
+.loader__container--subtitle {
   margin-left: 4px;
   font-size: var(--font-lg);
   color: var(--color-accent);
@@ -205,8 +208,80 @@
 }
 
 /* ============================= */
+/* Clases de resaltado de texto  */
+/* ============================= */
+
+.highlight {
+  color: var(--color-accent); /* Color principal para resaltar palabras */
+}
+
+.highlight__initial {
+  font-size: var(--font-md); /* Tamaño más pequeño para iniciales resaltadas */
+}
+
+/* ============================= */
+/* Clases del loader */
+/* ============================= */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--color-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  opacity: 1;
+  visibility: visible;
+  /* Transición para el fondo */
+  transition:
+    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.8s;
+}
+
+.loader__container {
+  text-align: center;
+  /* Animación de entrada: 0.8s */
+  animation: entranceEffect 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  /* Preparación para la salida inversa */
+  transition:
+    filter 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* KEYFRAMES DE ENTRADA */
+@keyframes entranceEffect {
+  from {
+    opacity: 0;
+    filter: blur(15px);
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+/* Efecto de salida (Exactamente el 'from' de la entrada) */
+.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.fade-out .loader__container {
+  opacity: 0;
+  filter: blur(15px);
+  transform: scale(1.05);
+}
+
+/* ============================= */
 /* Responsivo: Tablet (769px - 1024px) */
 /* ============================= */
+
 @media (min-width: 769px) and (max-width: 1024px) {
   .main {
     padding: var(--space-2);
@@ -215,14 +290,17 @@
     height: calc(100% - 32px);
     margin: var(--space-2);
   }
-  .name {
+  .name,
+  .loader__container--name {
     font-size: var(--font-xl);
     line-height: 40px;
   }
-  .name__initial {
+  .name__initial,
+  .loader__name--initial {
     font-size: var(--font-2xl);
   }
-  .subtitle {
+  .subtitle,
+  .loader__container--subtitle {
     margin-left: 3px;
     font-size: var(--font-md);
   }
@@ -258,6 +336,7 @@
 /* ============================= */
 /* Responsivo: Mobile (hasta 768px) */
 /* ============================= */
+
 @media (max-width: 768px) {
   .main {
     padding: var(--space-1);
@@ -270,14 +349,17 @@
   .header__navbar {
     width: 20px; /* se reduce el ancho de cajas laterales */
   }
-  .name {
+  .name,
+  .loader__container--name {
     font-size: var(--font-lg);
     line-height: 24px;
   }
-  .name__initial {
+  .name__initial,
+  .loader__name--initial {
     font-size: var(--font-xl);
   }
-  .subtitle {
+  .subtitle,
+  .loader__container--subtitle {
     margin-left: 2px;
     font-size: var(--font-sm);
   }
