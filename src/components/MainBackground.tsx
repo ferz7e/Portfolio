@@ -1,77 +1,113 @@
 import { useRef, useEffect } from "react";
 import * as THREE from "three";
 
-export default function CinematicParticleBackground() {
-  // Referencia al div donde se montará el canvas de Three.js
+export default function BeachParticleBackground() {
+  // Referencia al div que contendrá el canvas de Three.js
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Salir si el div aún no existe
+    // Si el ref todavía no está montado, salimos
     if (!mountRef.current) return;
 
-    // Contenedor y tamaño inicial
     const container = mountRef.current;
+
+    // Dimensiones del contenedor (fallback a ventana)
     const width = container.offsetWidth || window.innerWidth;
     const height = container.offsetHeight || window.innerHeight;
 
-    // Crear la escena y cámara ortográfica
+    // Escena principal
     const scene = new THREE.Scene();
+
+    // Cámara ortográfica (sin perspectiva)
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-    // Configuración del renderer
+    // Renderer WebGL optimizado
     const renderer = new THREE.WebGLRenderer({
       alpha: true, // fondo transparente
       antialias: false, // sin suavizado para mejorar rendimiento
       powerPreference: "high-performance", // prioriza GPU
     });
+
     renderer.setSize(width, height);
+
+    // Limita pixel ratio para no sobrecargar en pantallas retina
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Inserta el canvas en el DOM
     container.appendChild(renderer.domElement);
 
-    // ---- GEOMETRÍA DE PARTÍCULAS (DINÁMICO SEGÚN DISPOSITIVO) ----
-    let count = 400000; // Default Desktop
+    // Cantidad inicial de partículas
+    let count = 1000000;
+
+    // Ajuste responsivo según ancho de pantalla
     if (window.innerWidth <= 768) {
-      count = 200000; // Mobile
-    } else if (window.innerWidth <= 1024) {
-      count = 300000; // Tablet
+      count = 500000;
+    } else if (window.innerWidth <= 1224) {
+      count = 750000;
     }
 
     const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(count * 3); // X, Y, Z
-    const uvs = new Float32Array(count * 2); // coordenadas UV
 
-    // Inicializar posiciones y UVs aleatorias
+    // Arrays tipados para atributos de partículas
+    const positions = new Float32Array(count * 3); // x, y, z
+    const uvs = new Float32Array(count * 2); // coordenadas UV
+    const particleType = new Float32Array(count); // tipo visual
+
+    // Generación inicial de partículas
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = Math.random() * 2.2 - 1.1; // X [-1.1, 1.1]
-      positions[i * 3 + 1] = Math.random() * 2.2 - 1.1; // Y [-1.1, 1.1]
-      positions[i * 3 + 2] = 0; // Z = 0 (fondo 2D)
-      uvs[i * 2] = (positions[i * 3] + 1.1) / 2.2; // normalizar UV X
-      uvs[i * 2 + 1] = (positions[i * 3 + 1] + 1.1) / 2.2; // normalizar UV Y
+      // Distribución sesgada en X (más densidad hacia un lado)
+      const distributionX = Math.pow(Math.random(), 2.5);
+      const x = distributionX * 2.2 - 1.1;
+      const y = Math.random() * 2.2 - 1.1;
+
+      // Posición
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = 0;
+
+      // Conversión a espacio UV (0–1)
+      uvs[i * 2] = (x + 1.1) / 2.2;
+      uvs[i * 2 + 1] = (y + 1.1) / 2.2;
+
+      // 30% aprox serán tipo 1
+      particleType[i] = Math.random() > 0.7 ? 1.0 : 0.0;
     }
 
+    // Se registran atributos en la geometría
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+    geometry.setAttribute("aType", new THREE.BufferAttribute(particleType, 1));
 
-    // ---- SHADERS ----
+    // ================= VERTEX SHADER =================
     const vertexShader = `
       precision highp float;
-      varying vec2 vUv;         // pasa UV al fragment shader
-      varying float vBrightness; // brillo de la partícula
+
+      // Valores enviados al fragment shader
+      varying vec2 vUv;
+      varying float vBrightness;
+      varying float vType;
+
+      // Uniforms dinámicos
       uniform float uTime;
-      uniform vec2 uMouse;
       uniform vec2 uResolution;
 
+      // Datos de clicks
       uniform vec2 uClickPos[5];
       uniform float uClickTime[5];
 
+      // Datos de olas automáticas
       uniform vec2 uAutoPos[5];
       uniform float uAutoTime[5];
 
-      // Funciones para ruido Simplex
+      // Atributo personalizado por partícula
+      attribute float aType;
+
+      // Funciones auxiliares para simplex noise
       vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
       vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
       vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
 
+      // Generador de ruido procedural
       float snoise(vec2 v) {
         const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
         vec2 i  = floor(v + dot(v, C.yy) );
@@ -95,158 +131,160 @@ export default function CinematicParticleBackground() {
       }
 
       void main() {
+        // Pasamos datos al fragment shader
         vUv = uv;
+        vType = aType;
+
         vec3 pos = position;
 
-        // Ajuste de aspecto según resolución
+        // Corrección de aspecto
         float ratio = uResolution.x / uResolution.y;
         vec2 aspectUv = (uv - 0.5) * vec2(ratio, 1.0);
 
-        // Ruido para movimiento suave
-        float n = snoise(aspectUv * 0.7 + uTime * 0.04);
-        float n2 = snoise(aspectUv * 1.5 - uTime * 0.02);
-        pos.x += n * 0.08;
-        pos.y += n2 * 0.08;
-
-        // Interacción con el mouse
-        vec2 aspectMouse = (uMouse - 0.5) * vec2(ratio, 1.0);
-        float distMouse = distance(aspectUv, aspectMouse);
-        float mouseInertia = smoothstep(0.35, 0.0, distMouse);
-        pos.xy += normalize(aspectUv - aspectMouse + 0.001) * mouseInertia * 0.04;
+        // Movimiento base orgánico
+        float n = snoise(aspectUv * 0.8 + uTime * 0.05);
+        pos.x += n * 0.04;
+        pos.y += snoise(aspectUv * 1.2 - uTime * 0.03) * 0.04;
 
         vBrightness = 0.0;
 
-        // Efecto de clics recientes
+        // Intensidad progresiva hacia la derecha
+        float waveBoost = 0.5 + uv.x * 1.5;
+
+        // --- EFECTO DE CLICK (MÁS SUTIL) ---
         for(int i = 0; i < 5; i++) {
           float tClick = max(uTime - uClickTime[i], 0.0);
-          float fadeClick = smoothstep(4.0, 3.0, tClick);
-          vec2 aClick = (uClickPos[i] - 0.5) * vec2(ratio, 1.0);
-          float dClick = distance(aspectUv, aClick);
-          float impactClick = exp(-pow((dClick - tClick * 0.8) / 0.25, 2.0));
-          float attenClick = exp(-tClick * 0.7) * fadeClick;
-          vBrightness += impactClick * attenClick;
-          pos.xy += normalize(aspectUv - aClick + 0.0001) * impactClick * attenClick * 0.07;
+          if(tClick > 0.0 && tClick < 3.0) {
+            float fadeClick = smoothstep(2.5, 0.0, tClick);
+            vec2 aClick = (uClickPos[i] - 0.5) * vec2(ratio, 1.0);
+            float dClick = distance(aspectUv, aClick);
+            
+            float speed = 0.7;
+            float waveRadius = tClick * speed;
+            
+            float ring = exp(-pow((dClick - waveRadius) / 0.15, 2.0));
+            
+            vBrightness += ring * fadeClick * waveBoost * 0.35;
+            pos.xy += normalize(aspectUv - aClick + 0.0001) * ring * fadeClick * 0.012;
+          }
         }
 
-        // Efecto de ondas automáticas
+        // --- OLA AUTOMÁTICA (MÁS SUTIL) ---
         for(int i = 0; i < 5; i++) {
           float tAuto = max(uTime - uAutoTime[i], 0.0);
-          float fadeAuto = smoothstep(5.0, 4.0, tAuto);
+          float fadeAuto = smoothstep(5.0, 3.8, tAuto);
           vec2 aAuto = (uAutoPos[i] - 0.5) * vec2(ratio, 1.0);
           float dAuto = distance(aspectUv, aAuto);
-          float impactAuto = exp(-pow((dAuto - tAuto * 0.7) / 0.35, 2.0));
-          float attenAuto = exp(-tAuto * 0.5) * fadeAuto;
-          vBrightness += impactAuto * attenAuto;
-          pos.xy += normalize(aspectUv - aAuto + 0.0001) * impactAuto * attenAuto * 0.06;
+          
+          float impactAuto = exp(-pow((dAuto - tAuto * 0.6) / 0.35, 2.0));
+          float pushAuto = exp(-pow((dAuto - tAuto * 0.6) / 0.25, 2.0));
+          
+          vBrightness += impactAuto * fadeAuto * waveBoost * 0.7;
+          pos.xy += normalize(aspectUv - aAuto + 0.0001) * pushAuto * fadeAuto * 0.02;
         }
 
-        // Posición final de la partícula
         gl_Position = vec4(pos, 1.0);
 
-        // Tamaño con un poco de ruido y brillo
         float sizeNoise = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
-        gl_PointSize = (0.5 + sizeNoise * 1.5 + (vBrightness * 0.3)) * (uResolution.y / 900.0);
+        float sizeFactor = smoothstep(0.9, 0.1, uv.x); 
+        
+        float typeSize = aType > 0.5 ? 0.7 : 1.0;
+
+        gl_PointSize = (0.7 + sizeNoise * 1.5 + (vBrightness * 0.8))
+          * (uResolution.y / 900.0)
+          * sizeFactor
+          * typeSize;
       }
     `;
 
+    // ================= FRAGMENT SHADER =================
     const fragmentShader = `
       precision highp float;
+
+      varying vec2 vUv;
       varying float vBrightness;
+      varying float vType;
 
       void main() {
-        // Dibuja cada partícula como un círculo
         float r = distance(gl_PointCoord, vec2(0.5));
         if (r > 0.5) discard;
 
-        // Ajuste de opacidad según distancia al centro y brillo
-        float alpha = (1.0 - smoothstep(0.0, 0.5, r)) * (0.15 + vBrightness * 0.15);
+        vec3 primaryColor = vec3(0.93, 0.93, 0.93);
+        vec3 noirColor = vec3(0.2, 0.2, 0.2); 
+        
+        vec3 finalColor = mix(primaryColor, noirColor, vType);
 
-        // Color grisáceo con un toque de brillo
-        vec3 color = vec3(0.7) + (vBrightness * 0.1);
-        gl_FragColor = vec4(color, alpha);
+        finalColor += vBrightness * 0.35 * (1.0 - vType * 0.5);
+
+        float visibility = 1.0 - smoothstep(0.1, 0.9, vUv.x);
+        float typeAlpha = vType > 0.5 ? 0.6 : 1.0;
+
+        float alpha = (1.0 - smoothstep(0.0, 0.5, r))
+          * (0.15 + vBrightness * 0.85)
+          * visibility
+          * typeAlpha;
+        
+        gl_FragColor = vec4(finalColor, alpha);
       }
     `;
 
-    // ---- UNIFORMS ----
+    // Uniforms compartidos entre JS y shaders
     const uniforms = {
       uTime: { value: 0 },
       uResolution: { value: new THREE.Vector2(width, height) },
-      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
       uClickPos: { value: Array.from({ length: 5 }, () => new THREE.Vector2(-10, -10)) },
       uClickTime: { value: new Float32Array(5).fill(-10.0) },
       uAutoPos: { value: Array.from({ length: 5 }, () => new THREE.Vector2(-10, -10)) },
       uAutoTime: { value: new Float32Array(5).fill(-10.0) },
     };
 
-    // ---- MATERIAL Y PUNTOS ----
+    // Material con blending aditivo (efecto luminoso)
     const material = new THREE.ShaderMaterial({
       uniforms,
       vertexShader,
       fragmentShader,
       transparent: true,
-      blending: THREE.AdditiveBlending, // brillo acumulativo
-      depthWrite: false, // no escribe profundidad
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
     });
 
     const points = new THREE.Points(geometry, material);
     scene.add(points);
 
-    // ---- ANIMACIÓN ----
     let animationFrameId: number;
-    const targetMousePos = new THREE.Vector2(0.5, 0.5);
     let clickIdx = 0;
     let autoIdx = 0;
 
+    // Loop principal de render
     const animate = (time: number) => {
       uniforms.uTime.value = time * 0.001;
-      uniforms.uMouse.value.lerp(targetMousePos, 0.05); // suaviza movimiento del mouse
       renderer.render(scene, camera);
       animationFrameId = requestAnimationFrame(animate);
     };
     animate(0);
 
-    // ---- ONDAS AUTOMÁTICAS ----
+    // Genera ola automática cada 4 segundos
     const triggerAutoWave = () => {
-      const side = Math.floor(Math.random() * 4);
-      let x = 0.5,
-        y = 0.5;
-      if (side === 0) {
-        x = -0.2;
-        y = Math.random();
-      } else if (side === 1) {
-        x = 1.2;
-        y = Math.random();
-      } else if (side === 2) {
-        x = Math.random();
-        y = 1.2;
-      } else {
-        x = Math.random();
-        y = -0.2;
-      }
-
+      const x = -0.3;
+      const y = Math.random();
       uniforms.uAutoPos.value[autoIdx].set(x, y);
       uniforms.uAutoTime.value[autoIdx] = uniforms.uTime.value;
       autoIdx = (autoIdx + 1) % 5;
     };
 
-    const autoWaveInterval = setInterval(triggerAutoWave, 8000);
+    const autoWaveInterval = setInterval(triggerAutoWave, 4000);
 
-    // ---- EVENTOS DEL USUARIO ----
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      targetMousePos.set((e.clientX - rect.left) / rect.width, 1.0 - (e.clientY - rect.top) / rect.height);
-    };
-
+    // Maneja clicks del usuario
     const handleClick = (e: MouseEvent) => {
       const rect = container.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = 1.0 - (e.clientY - rect.top) / rect.height;
-
       uniforms.uClickPos.value[clickIdx].set(x, y);
       uniforms.uClickTime.value[clickIdx] = uniforms.uTime.value;
       clickIdx = (clickIdx + 1) % 5;
     };
 
+    // Ajusta tamaño en resize
     const handleResize = () => {
       const w = container.offsetWidth;
       const h = container.offsetHeight;
@@ -255,13 +293,11 @@ export default function CinematicParticleBackground() {
     };
 
     window.addEventListener("resize", handleResize);
-    window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mousedown", handleClick);
 
-    // ---- CLEANUP ----
+    // Cleanup al desmontar
     return () => {
       window.removeEventListener("resize", handleResize);
-      window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mousedown", handleClick);
       clearInterval(autoWaveInterval);
       cancelAnimationFrame(animationFrameId);
@@ -274,7 +310,7 @@ export default function CinematicParticleBackground() {
     };
   }, []);
 
-  // Div que contiene el canvas, full screen y sin interferir con UI
+  // Contenedor del fondo
   return (
     <div
       ref={mountRef}
@@ -287,9 +323,8 @@ export default function CinematicParticleBackground() {
         zIndex: 0,
         pointerEvents: "none",
         overflow: "hidden",
-        backgroundColor: "transparent",
-        opacity: "1",
-        borderRadius: "8px",
+        background: "transparent",
+        opacity: "0.7",
       }}
     />
   );
